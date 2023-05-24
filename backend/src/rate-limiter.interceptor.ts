@@ -13,14 +13,13 @@ import { User } from './user.entity';
 
 @Injectable()
 export class RateLimiterInterceptor implements NestInterceptor {
-  private readonly bucketSize: number;
+  private readonly bucketSize: number = 3;
 
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
-    bucketSize: number,
+    private userRepository: Repository<User>
   ) {
-    this.bucketSize = bucketSize;
+
   }
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {

@@ -14,6 +14,6 @@ import { User } from '../user.entity';
     ],
     providers: [AuthService, GoogleStrategy, GithubStrategy],
     controllers: [AuthController],
-    exports: [AuthService],
+    exports: [AuthService, TypeOrmModule],
   })
   export class AuthModule {}
