@@ -24,13 +24,13 @@ import { ConfigModule } from '@nestjs/config';
   ],
   controllers: [AppController],
   providers: [
-    AppService,
+    AppService,   
+    AuthService,
     {
-      provide: 'RATE_LIMITER',
+      provide: RateLimiterInterceptor,
       useFactory: (userRepository: Repository<User>) => new RateLimiterInterceptor(userRepository, 3),
       inject: [getRepositoryToken(User)],
-    },   
-    AuthService,
+    },
   ],
 })
 export class AppModule {}

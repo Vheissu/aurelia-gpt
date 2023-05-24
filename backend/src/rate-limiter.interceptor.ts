@@ -44,6 +44,17 @@ export class RateLimiterInterceptor implements NestInterceptor {
       );
     }
 
+    // Check if 24 hours have passed since firstQueryTimestamp
+    const currentTime = new Date();
+    const resetTime = new Date(dbUser.firstQueryTimestamp);
+    resetTime.setHours(resetTime.getHours() + 24);
+
+    if (currentTime >= resetTime) {
+      // Reset queryCount and update firstQueryTimestamp
+      dbUser.queryCount = 0;
+      dbUser.firstQueryTimestamp = currentTime;
+    }
+
     if (dbUser.queryCount < this.bucketSize) {
       dbUser.queryCount++;
       await this.userRepository.save(dbUser);

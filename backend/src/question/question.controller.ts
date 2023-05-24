@@ -13,8 +13,8 @@ import { QuestionService } from "./question.service";
 @Controller("questions")
 export class QuestionController {
   constructor(
-    @Inject("RATE_LIMITER")
-    private readonly rateLimiter: RateLimiterInterceptor,
+    @Inject(RateLimiterInterceptor)
+    private rateLimiterInterceptor: RateLimiterInterceptor,
     private readonly questionService: QuestionService
   ) {}
 
