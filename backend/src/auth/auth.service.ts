@@ -5,39 +5,39 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectRepository(User) private userRepository: Repository<User>) { }
+    constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
 
-  async validateGithubUser(githubId: string): Promise<User> {
-    return await this.userRepository.findOne({ where: { githubId: githubId } });
-  }
-
-  async validateGoogleUser(googleId: string): Promise<User> {
-    return await this.userRepository.findOne({ where: { googleId: googleId } });
-  }
-
-  async saveUser(user: User) {
-    return await this.userRepository.save(user);
-  }
-
-  googleLogin(req) {
-    if (!req.user) {
-      return 'No user from google'
+    async validateGithubUser(githubId: number): Promise<User> {
+        return await this.userRepository.findOne({ where: { githubId: githubId } });
     }
 
-    return {
-      message: 'User information from google',
-      user: req.user
-    }
-  }
-
-  githubLogin(req) {
-    if (!req.user) {
-      return 'No user from github'
+    async validateGoogleUser(googleId: string): Promise<User> {
+        return await this.userRepository.findOne({ where: { googleId: googleId } });
     }
 
-    return {
-      message: 'User information from github',
-      user: req.user
+    async saveUser(user: User) {
+        return await this.userRepository.save(user);
     }
-  }
+
+    googleLogin(req) {
+        if (!req.user) {
+            return 'No user from google';
+        }
+
+        return {
+            message: 'User information from google',
+            user: req.user,
+        };
+    }
+
+    githubLogin(req) {
+        if (!req.user) {
+            return 'No user from github';
+        }
+
+        return {
+            message: 'User information from github',
+            user: req.user,
+        };
+    }
 }
