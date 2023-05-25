@@ -3,11 +3,12 @@ dotenv.config();
 
 import { GithubRepoLoader } from "langchain/document_loaders/web/github";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { HNSWLib } from "langchain/vectorstores/hnswlib";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { createClient } from '@supabase/supabase-js';
+import { SupabaseVectorStore } from 'langchain/vectorstores';
+import { Embeddings, OpenAIEmbeddings } from "langchain/embeddings";
 import { OpenAI } from "langchain/llms/openai";
 
-const vectorPath = `vectors`;
+const supabaseClient = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_PRIVATE_KEY || '');
 
 export async function processGithubRepo(repoUrl: string, openaiApiKey: string = null, githubApiKey: string = null): Promise<void> {
   openaiApiKey = openaiApiKey || process.env.OPENAI_API_KEY;
@@ -17,7 +18,7 @@ export async function processGithubRepo(repoUrl: string, openaiApiKey: string = 
     const embeddings = new OpenAIEmbeddings({
       openAIApiKey: openaiApiKey,
     });
-    
+
     const model = new OpenAI({
       openAIApiKey: openaiApiKey,
     });
@@ -61,8 +62,6 @@ export async function processGithubRepo(repoUrl: string, openaiApiKey: string = 
       ignoreFiles: [...exclude_ext, ...exclude_dirs, ...exclude_files],
     });
 
-    const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000 });
-
     const docs = await loader.load();
 
     const documents = {};
@@ -85,13 +84,31 @@ export async function processGithubRepo(repoUrl: string, openaiApiKey: string = 
     const output = [];
     for (const key in documents) {
       const docs = documents[key];
-      const output2 = await splitter.splitDocuments(docs);
+      const output2 = await splitDocsIntoChunks(docs);
       output.push(...output2);
     }
 
-    const vectorStore = await HNSWLib.fromDocuments(output, embeddings);
-    await vectorStore.save(vectorPath);
+    await embedDocuments(supabaseClient, output, embeddings);
   } catch (error) {
     console.error("Error processing GitHub repository:", error);
   }
 }
+
+async function embedDocuments(
+    client,
+    docs: Document[],
+    embeddings: Embeddings,
+  ) {
+    console.log('creating embeddings...');
+    await SupabaseVectorStore.fromDocuments(docs, embeddings, { client, tableName: 'documents', queryName: 'watch_documents' });
+    console.log('embeddings successfully stored in supabase');
+  }
+
+  async function splitDocsIntoChunks(docs: Document[]): Promise<Document[]> {
+    const textSplitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 2000,
+      chunkOverlap: 200,
+    });
+
+    return await textSplitter.splitDocuments(docs) as unknown as Document[];
+  }

@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "engines": {
-    "node": "18.x"
+    "node": ">=18.x"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
@@ -31,6 +31,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/typeorm": "^9.0.1",
     "@octokit/rest": "^19.0.11",
+    "@supabase/supabase-js": "^2.22.0",
     "dotenv": "^16.0.3",
     "hnswlib-node": "^1.4.2",
     "jwt-simple": "^0.5.6",
