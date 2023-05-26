@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { RetrievalQAChain } from 'langchain/chains';
-import { HNSWLib } from 'langchain/vectorstores/hnswlib';
+import { RetrievalQAChain, VectorDBQAChain } from 'langchain/chains';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { OpenAI } from 'langchain/llms/openai';
+import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
 
-const vectorPath = `vectors`;
+import { openaiClient, OPENAI_API_KEY } from './../core/openai-client';
+import { supabaseClient } from '../core/supabase-client';
 
 @Injectable()
 export class QuestionService {
@@ -17,20 +17,14 @@ export class QuestionService {
             throw new Error('Missing question');
         }
 
-        const openAIApiKey = this.configService.get<string>('OPENAI_API_KEY');
+        const vectorStore = await SupabaseVectorStore.fromExistingIndex(
+            new OpenAIEmbeddings({ openAIApiKey: OPENAI_API_KEY }),
+            {
+                client: supabaseClient,
+            }
+        );
 
-        if (!openAIApiKey) {
-            throw new Error('Missing OPENAI_API_KEY');
-        }
-
-        const model = new OpenAI({
-            openAIApiKey,
-            modelName: this.configService.get<string>('OPENAI_MODEL'),
-        });
-
-        const vectorStore = await HNSWLib.load(vectorPath, new OpenAIEmbeddings({ openAIApiKey }));
-
-        const chain = RetrievalQAChain.fromLLM(model, vectorStore.asRetriever());
+        const chain = RetrievalQAChain.fromLLM(openaiClient, vectorStore.asRetriever());
 
         const res = await chain.call({
             query: question,
