@@ -1,3 +1,4 @@
+import { checkTokenExpiry } from './core/check-expiry';
 import { IApiService } from './services/api-service';
 import MarkdownIt from 'markdown-it';
 
@@ -12,23 +13,30 @@ export class MyApp {
     constructor(@IApiService private readonly api: IApiService) {}
 
     attached() {
-      const token = new URLSearchParams(window.location.search).get('accessToken');
-      const tokenFromStorage = localStorage.getItem('token');
+        // get the token from URL
+        const tokenFromURL = new URLSearchParams(window.location.search).get('accessToken');
+        let tokenFromStorage = localStorage.getItem('token');
 
-      if (token) {
-        localStorage.setItem('token', token);
-        //window.location.href = '/';
-      }
+        // Check token expiry for the stored token
+        checkTokenExpiry();
 
-      if (tokenFromStorage || token) {
-        this.loggedIn = true;
-      } else {
-        this.loggedIn = false;
-      }
+        // Re-fetch the token from local storage in case it was removed by checkTokenExpiry()
+        tokenFromStorage = localStorage.getItem('token');
+
+        if (tokenFromURL) {
+            const currentTime = new Date();
+            localStorage.setItem('token', tokenFromURL);
+            localStorage.setItem('loginTime', String(currentTime.getTime()));
+            // Remove the accessToken from the URL after storing it
+            window.history.replaceState({}, document.title, '/');
+        }
+
+        // Set loggedIn based on presence of a valid token
+        this.loggedIn = !!(tokenFromStorage || tokenFromURL);
     }
 
     private login() {
-      window.location.href = `${process.env.BACKEND_URL}/auth/github`;
+        window.location.href = `${process.env.BACKEND_URL}/auth/github`;
     }
 
     private async ask() {
@@ -53,7 +61,7 @@ export class MyApp {
             }
 
             if (this.errored) {
-              setTimeout(() => this.dismissError(), 5000);
+                setTimeout(() => this.dismissError(), 5000);
             }
         }
     }
@@ -76,10 +84,10 @@ export class MyApp {
     }
 
     private dismissError() {
-      this.errored = false;
+        this.errored = false;
     }
 
     private logout() {
-      this.api.logout();
+        this.api.logout();
     }
 }
