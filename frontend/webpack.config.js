@@ -3,6 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const Dotenv = require('dotenv-webpack');
+const { DefinePlugin } = require('webpack');
 
 const cssLoader = 'css-loader';
 
@@ -63,6 +64,9 @@ module.exports = function (env, { analyze }) {
             new Dotenv({
                 path: `./.env${production ? '' : '.' + (process.env.NODE_ENV || 'development')}`,
             }),
+            new DefinePlugin({
+                'process.env.BACKEND_URL': JSON.stringify(process.env.BACKEND_URL),
+              }),
             analyze && new BundleAnalyzerPlugin(),
         ].filter((p) => p),
     };
