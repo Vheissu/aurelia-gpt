@@ -10,7 +10,8 @@
   "dependencies": {
     "@aurelia/router": "latest",
     "aurelia": "latest",
-    "markdown-it": "^13.0.1"
+    "markdown-it": "^13.0.1",
+    "serve": "^14.2.0"
   },
   "devDependencies": {
     "@aurelia/testing": "latest",
@@ -50,7 +51,8 @@
     "start": "webpack serve",
     "build": "rimraf dist && webpack --env production",
     "analyze": "rimraf dist && webpack --env production --analyze",
-    "test": "jest"
+    "test": "jest",
+    "railway": "serve dist -s -n -L -p $PORT"
   },
   "jest": {
     "testMatch": [
