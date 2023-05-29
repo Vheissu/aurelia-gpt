@@ -17,6 +17,12 @@ export class QuestionService {
             throw new Error('Missing question');
         }
 
+        const maxQuestionLength = process.env.OPENAI_MODEL === 'gpt-3.5-turbo' ? 6000 : 12000;
+
+        if (question.length > maxQuestionLength) {
+            throw new Error(`Question is too long. Max length is ${maxQuestionLength}`);
+          }
+
         const vectorStore = await SupabaseVectorStore.fromExistingIndex(
             new OpenAIEmbeddings({ openAIApiKey: OPENAI_API_KEY }),
             {
