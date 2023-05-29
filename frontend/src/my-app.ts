@@ -69,7 +69,7 @@ export class MyApp {
     private typeResponse(response: string, i: number) {
         if (i < response.length) {
             this.response += response.charAt(i);
-            setTimeout(() => this.typeResponse(response, i + 1), 80);
+            setTimeout(() => this.typeResponse(response, i + 1), 30);
         } else {
             this.loading = false;
         }
